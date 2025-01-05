@@ -1,36 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script>
-	
-      const packageName = "nwtimetracking";
-      const versions = ["5.0.0", "4.8.0", "4.7.0", "4.6.0", "4.5.0", "4.0.0"];
-
-      function initializePage() {
-        document.title = packageName;
-
-        const header = document.createElement("h1");
-        header.textContent = packageName;
-        document.body.prepend(header);
-
-        const container = document.getElementById("links-container");
-        versions.forEach(version => {
-          const link = document.createElement("a");
-          link.href = `git+https://github.com/numbworks/${packageName}.git@v${version}#subdirectory=src&egg=${packageName}-${version}`;
-          link.dataset.requiresPython = ">=3.12.5";
-          link.textContent = `${packageName}-${version}`;
-
-          const lineBreak = document.createElement("br");
-
-          container.appendChild(link);
-          container.appendChild(lineBreak);
-        });
-      }
-
-      window.onload = initializePage;
-    </script>
+    <title>nwtimetracking</title>
   </head>
   <body>
-    <div id="links-container"></div>
+    <h1>nwtimetracking</h1>
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v5.0.0#subdirectory=src&egg=nwtimetracking-5.0.0" data-requires-python="&gt;=3.12.5">nwtimetracking-5.0.0</a>
+	<br/>
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v4.8.0#subdirectory=src&egg=nwtimetracking-4.8.0" data-requires-python="&gt;=3.12.5">nwtimetracking-4.8.0</a>
+	<br/>
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v4.7.0#subdirectory=src&egg=nwtimetracking-4.7.0" data-requires-python="&gt;=3.12.5">nwtimetracking-4.7.0</a>
+	<br/>	
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v4.6.0#subdirectory=src&egg=nwtimetracking-4.6.0" data-requires-python="&gt;=3.12.5">nwtimetracking-4.6.0</a>
+	<br/>
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v4.5.0#subdirectory=src&egg=nwtimetracking-4.5.0" data-requires-python="&gt;=3.12.5">nwtimetracking-4.5.0</a>
+	<br/>
+    <a href="git+https://github.com/numbworks/nwtimetracking.git@v4.0.0#subdirectory=src&egg=nwtimetracking-4.0.0" data-requires-python="&gt;=3.12.5">nwtimetracking-4.0.0</a>
+	<br/>
   </body>
 </html>
