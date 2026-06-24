@@ -1,4 +1,4 @@
-# numbworks.github.io
+# NW's Software Hub
 
 Contact: numbworks@gmail.com
 
@@ -8,8 +8,32 @@ This is the landing page for **NW's Software Hub**, which consists of the follow
 
 |||
 |:---|:---|
-|NW's Python Package Index|https://numbworks.github.io/pypi|
 |NW's Binary Releases|https://numbworks.github.io/binaries|
+|NW's Python Package Index|https://numbworks.github.io/pypi|
+
+## NW's Binary Releases
+
+### Target Platforms
+
+My applications are compiled for the following platforms:
+
+- Windows (x64)
+- Linux
+  - generic-amd64
+  - generic-arm64
+  - debian-amd64
+  - debian-arm64
+
+As an open‑source developer, I don’t target Apple MacOS.
+
+The reasons are:
+
+- Paid certification: distributing binaries requires an annual developer license, which is incompatible with free software distribution.
+- Expensive hardware: building and testing MacOS apps requires proprietary Apple hardware with a high entry cost and a closed ecosystem.
+- Lack of open‑source investment: Apple is not among the companies that actively support open‑source projects with funding or engineering resources.
+- No local cross‑compilation: Python applications cannot be cross‑compiled for MacOS from Linux or Windows, breaking my unified build workflow.
+
+If you are a MacOs user, you can still attempt to compile or run my applications from the source code.
 
 ## NW's Python Package Index
 
@@ -97,30 +121,6 @@ Dynamically-generated index.html pages for packages do display perfectly on GitH
 - [PEP 503 – Simple Repository API](https://peps.python.org/pep-0503/)
 - [How to use GitHub as a PyPi server - Tutorial](https://www.freecodecamp.org/news/how-to-use-github-as-a-pypi-server-1c3b0d07db2/)
 - [How to use GitHub as a PyPi server - Repository](https://github.com/ceddlyburge/python-package-server/tree/master)
-
-## NW's Binary Releases
-
-### Target Platforms
-
-My applications are compiled for the following platforms:
-
-- Windows (x64)
-- Linux
-  - generic-amd64
-  - generic-arm64
-  - debian-amd64
-  - debian-arm64
-
-As an open‑source developer, I don’t target Apple MacOS.
-
-The reasons are:
-
-- Paid certification: distributing binaries requires an annual developer license, which is incompatible with free software distribution.
-- Expensive hardware: building and testing MacOS apps requires proprietary Apple hardware with a high entry cost and a closed ecosystem.
-- Lack of open‑source investment: Apple is not among the companies that actively support open‑source projects with funding or engineering resources.
-- No local cross‑compilation: Python applications cannot be cross‑compiled for MacOS from Linux or Windows, breaking my unified build workflow.
-
-If you are a MacOs user, you can still attempt to compile or run my applications from the source code.
 
 ## Other links
 
