@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>NW's Python Package Index</title>
+    <style>
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        margin: 40px left; 
+        padding: 0 20px; 
+        color: #333; 
+      }
+      .header-img { width: 150px; height: 150px; }
+      .title { font-size: 32px; font-weight: bold; margin: 20px 0 10px 0; }
+      
+      .selector-container { margin-bottom: 30px; font-size: 16px; }
+      select { padding: 8px 12px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; margin-left: 10px; }
+      
+      #release-frame { min-height: 200px; }
+      .version-block { margin-bottom: 40px; }
+      .version-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #000; }
+      
+      .repo-description { font-size: 14px; line-height: 1.5; color: #444; max-width: 750px; margin-bottom: 20px; padding-left: 5px; }
+      
+      .user-section { margin-bottom: 20px; padding-left: 5px; }
+      .section-title { font-size: 15px; font-weight: 600; margin-top: 0; margin-bottom: 10px; color: #555; }
+      
+      .download-list { list-style: none; padding: 0; margin: 0; }
+      .download-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 15px; }
+      .download-link { color: #0969da; text-decoration: none; font-weight: 500; font-family: monospace; font-size: 14px; }
+      .download-link:hover { text-decoration: underline; }
+      
+      .cmd-container { 
+        margin-bottom: 12px; 
+        width: max-content; 
+        min-width: 600px; 
+        max-width: 100vw; 
+      }
+      .cmd-label { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 4px; }
+      .cmd-box { background: #2d3748; color: #f7fafc; border-radius: 6px; padding: 10px 12px; font-family: monospace; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+      
+      .cmd-text { 
+        white-space: pre; 
+        flex-grow: 1; 
+        line-height: 1.4; 
+      }
+      .copy-btn { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; align-self: flex-start; }
+      .copy-btn:hover { background: #718096; }
+      
+      .loading { color: #666; font-style: italic; padding: 20px; }
+      .error { color: #cf222e; padding: 20px; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+
+    <img src="https://avatars.githubusercontent.com/u/10279234" class="header-img" alt="NW Logo" />
+    <p class="title">NW's Binary Releases</p>
+    
+    <div class="selector-container">
+      <label for="app-select">Please select the application:</label>
+      <select id="app-select" onchange="handleAppSelection()">
+        <option value="" data-lang="">- Select -</option>
+        <option value="nwcommitaverages" data-lang="python">nwcommitaverages</option>
+        <option value="nwdocstringchecking" data-lang="python">nwdocstringchecking</option>
+        <option value="nwpackageversions" data-lang="python">nwpackageversions</option>
+        <option value="nwreadinglist" data-lang="python">nwreadinglist</option>
+        <option value="nwtimetracking" data-lang="python">nwtimetracking</option>
+        <option value="nwversioninfofiles" data-lang="python">nwversioninfofiles</option>
+      </select>
+    </div>
+
+    <div id="release-frame"></div>
+
+    <script>
+      const GH_ORG = "numbworks";
+
+      async function handleAppSelection() {
+        const select = document.getElementById("app-select");
+        const frame = document.getElementById("release-frame");
+        const appName = select.value;
+
+        if (!appName) {
+          frame.innerHTML = "";
+          return;
+        }
+
+        const selectedOption = select.options[select.selectedIndex];
+        const appLang = selectedOption.getAttribute("data-lang");
+
+        frame.innerHTML = `<div class="loading">Fetching data from GitHub API...</div>`;
+
+        try {
+          const [repoRes, releasesRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${GH_ORG}/${appName}`),
+            fetch(`https://api.github.com/repos/${GH_ORG}/${appName}/releases`)
+          ]);
+
+          if (!releasesRes.ok) throw new Error("Repository not found or API limit reached.");
+          
+          let repoDescription = "";
+          if (repoRes.ok) {
+            const repoData = await repoRes.json();
+            repoDescription = repoData.description || "";
+          }
+
+          const releases = await releasesRes.json();
+          let htmlOutput = "";
+          let visibleReleaseCount = 0;
+
+          releases.forEach(release => {
+            const version = release.tag_name;
+            const releaseDate = release.published_at ? release.published_at.split('T')[0] : '';
+            const dateDisplay = releaseDate ? ` (${releaseDate})` : '';
+
+            let basicUserHtml = "";
+            let advancedUserHtml = "";
+
+            let win64Asset = null;
+            let linuxAmd64ZipAsset = null;
+            let linuxArm64ZipAsset = null;
+            let debAmd64Asset = null;
+            let debArm64Asset = null;
+
+            release.assets.forEach(asset => {
+              let isMatch = false;
+              if (asset.name.includes("win64.zip")) { isMatch = true; win64Asset = asset.browser_download_url; }
+              else if (asset.name.includes("linux-amd64.zip")) { isMatch = true; linuxAmd64ZipAsset = asset.browser_download_url; }
+              else if (asset.name.includes("linux-arm64.zip")) { isMatch = true; linuxArm64ZipAsset = asset.browser_download_url; }
+              else if (asset.name.includes("linux-amd64.deb")) { isMatch = true; debAmd64Asset = asset.browser_download_url; }
+              else if (asset.name.includes("linux-arm64.deb")) { isMatch = true; debArm64Asset = asset.browser_download_url; }
+
+              if (isMatch) {
+                basicUserHtml += `
+                  <li>
+                    <a class="download-link" href="${asset.browser_download_url}">${asset.name}</a>
+                  </li>`;
+              }
+            });
+
+            if (!basicUserHtml) {
+              return; 
+            }
+
+            visibleReleaseCount++;
+
+            if (win64Asset) {
+              const fileName = win64Asset.split('/').pop();
+              advancedUserHtml += makeCmdBlock("Windows x64 (PowerShell)", `Invoke-WebRequest -Uri "${win64Asset}";\nExpand-Archive "${fileName}" -DestinationPath "."`);
+            }
+            if (linuxAmd64ZipAsset) {
+              const fileName = linuxAmd64ZipAsset.split('/').pop();
+              const folderName = fileName.replace('.zip', '');
+              const execName = fileName.split('-')[0];
+              advancedUserHtml += makeCmdBlock("Linux amd64 (Bash)", `wget ${linuxAmd64ZipAsset} && \\\nunzip ${fileName} -d ${folderName} && \\\nchmod +x ./${folderName}/${execName}`);
+            }
+            if (linuxArm64ZipAsset) {
+              const fileName = linuxArm64ZipAsset.split('/').pop();
+              const folderName = fileName.replace('.zip', '');
+              const execName = fileName.split('-')[0];
+              advancedUserHtml += makeCmdBlock("Linux arm64 (Bash)", `wget ${linuxArm64ZipAsset} && \\\nunzip ${fileName} -d ${folderName} && \\\nchmod +x ./${folderName}/${execName}`);
+            }
+            if (debAmd64Asset) {
+              const fileName = debAmd64Asset.split('/').pop();
+              advancedUserHtml += makeCmdBlock("Debian amd64 (Bash)", `wget ${debAmd64Asset} && \\\nsudo dpkg -i ${fileName}`);
+            }
+            if (debArm64Asset) {
+              const fileName = debArm64Asset.split('/').pop();
+              advancedUserHtml += makeCmdBlock("Debian arm64 (Bash)", `wget ${debArm64Asset} && \\\nsudo dpkg -i ${fileName}`);
+            }
+
+            let sourceInstallHtml = "";
+            if (appLang === "python") {
+              const pipScript = `pip install --extra-index-url https://numbworks.github.io/pypi ${appName}==${version}`;
+              const dockerScript = `docker run -it python:3.12.5-bookworm /bin/bash\npip install --extra-index-url https://numbworks.github.io/pypi ${appName}==${version}`;
+              
+              sourceInstallHtml = `
+                <div class="user-section">
+                  <div class="section-title">Install From Source</div>
+                  ${makeCmdBlock("NW's Python Package Index (Requires Python Installed)", pipScript)}
+                  ${makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript)}
+                </div>`;
+            }
+
+            const descriptionSnippet = (visibleReleaseCount === 1 && repoDescription) 
+              ? `<div class="repo-description">${repoDescription}</div>` 
+              : '';
+
+            htmlOutput += `
+              <div class="version-block">
+                <div class="version-title">${appName}-${version} ${dateDisplay}</div>
+                
+                ${descriptionSnippet}
+                
+                <div class="user-section">
+                  <div class="section-title">Direct Download</div>
+                  <ul class="download-list">
+                    ${basicUserHtml}
+                  </ul>
+                </div>
+                
+                <div class="user-section">
+                  <div class="section-title">Terminal Commands</div>
+                  ${advancedUserHtml}
+                </div>
+
+                ${sourceInstallHtml}
+              </div>`;
+          });
+
+          if (visibleReleaseCount === 0) {
+            frame.innerHTML = `<div class="loading">No valid binary releases found for ${appName}.</div>`;
+          } else {
+            frame.innerHTML = htmlOutput;
+          }
+
+        } catch (error) {
+          frame.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+      }
+
+      function makeCmdBlock(platform, script) {
+        return `
+          <div class="cmd-container">
+            <div class="cmd-label">${platform}</div>
+            <div class="cmd-box">
+              <div class="cmd-text">${script}</div>
+              <button class="copy-btn" onclick="copyText(this)">Copy</button>
+            </div>
+          </div>`;
+      }
+
+      function copyText(btn) {
+        const txt = btn.previousElementSibling.innerText;
+        navigator.clipboard.writeText(txt).then(() => {
+          const old = btn.innerText;
+          btn.innerText = "Copied!";
+          setTimeout(() => btn.innerText = old, 1500);
+        });
+      }
+    </script>
+  </body>
+</html>
