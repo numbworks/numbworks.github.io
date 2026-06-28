@@ -1,17 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
     <title>NW's Software Hub</title>
+    <style>
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        margin: 40px left; 
+        padding: 0 20px; 
+        color: #333; 
+      }
+      .header-img { width: 150px; height: 150px; }
+      
+      /* Matching the style/font profile of the binary releases layout */
+      .title-container { 
+        margin: 20px 0 10px 0; 
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .title { 
+        font-size: 32px; 
+        font-weight: bold; 
+        color: #333;
+        margin: 0;
+      }
+      .info-link { 
+        font-size: 18px; 
+        color: #0969da; 
+        text-decoration: none; 
+      }
+      .info-link:hover { 
+        text-decoration: underline; 
+      }
+
+      ul { padding-left: 20px; margin-top: 20px; }
+      li { margin-bottom: 10px; }
+      li a { 
+        color: #0969da; 
+        text-decoration: none; 
+        font-weight: 500;
+      }
+      li a:hover { 
+        text-decoration: underline; 
+      }
+    </style>
   </head>
   <body>
-	<img src="https://avatars.githubusercontent.com/u/10279234" style="width: 150px; height: 150px;" />
-	<p>
-	  <b style="font-size: 32px;">NW's Software Hub</b>
-	  (<a href="https://github.com/numbworks/numbworks.github.io/blob/master/README.md" style="font-size: 18px;">more info</a>)
-	</p>
-	<ul>
-		<li><a href="binaries/index.html">NW's Binary Releases</a></li>
-		<li><a href="pypi/index.html">NW's Python Package Index</a></li>
-	</ul>
+
+    <img src="https://avatars.githubusercontent.com/u/10279234" class="header-img" alt="NW Logo" />
+    
+    <div class="title-container">
+      <h1 class="title">NW's Software Hub</h1>
+      <span class="info-link">(<a href="https://github.com/numbworks/numbworks.github.io/blob/master/README.md" class="info-link">more info</a>)</span>
+    </div>
+
+    <ul>
+        <li><a href="binaries/index.html">NW's Binary Releases</a></li>
+        <li><a href="pypi/index.html">NW's Python Package Index</a></li>
+    </ul>
+
   </body>
 </html>

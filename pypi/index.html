@@ -1,28 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
     <title>NW's Python Package Index</title>
+    <style>
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        margin: 40px left; 
+        padding: 0 20px; 
+        color: #333; 
+      }
+      .header-img { width: 150px; height: 150px; }
+      
+      .title { 
+        font-size: 32px; 
+        font-weight: bold; 
+        color: #333;
+        margin: 20px 0 10px 0;
+      }
+      
+      .instruction-box { 
+        background-color: #f8f9fa; 
+        border-radius: 6px;
+        border: 1px solid #e1e4e6;
+        padding: 15px; 
+        margin: 20px 0;
+        max-width: 750px;
+      }
+      .instruction-box p {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .instruction-box ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .instruction-box li {
+        margin-bottom: 6px;
+      }
+      .instruction-box li:last-child {
+        margin-bottom: 0;
+      }
+      
+      /* Clean text styling without background highlighting colors */
+      code {
+        font-family: monospace;
+        color: #24292e;
+        font-size: 13px;
+      }
+      
+      .package-list { padding-left: 20px; margin-top: 20px; }
+      .package-list li { margin-bottom: 8px; }
+      .package-link { 
+        color: #0969da; 
+        text-decoration: none; 
+        font-family: monospace;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .package-link:hover { 
+        text-decoration: underline; 
+      }
+    </style>
   </head>
   <body>
-	<img src="https://avatars.githubusercontent.com/u/10279234" style="width: 150px; height: 150px;" />
-	<p>
-	  <b style="font-size: 32px;">NW's Python Package Index</b>
-	</p>
-	<div style="background-color: #f0f0f0; padding: 10px; display: inline-block;">
-	  <p>To install the packages listed below, open a terminal application and run one of the following commands:</p>
-	  <ul>
-		<li><code>pip install --extra-index-url https://numbworks.github.io/pypi {package_name}</code></li>
-		<li><code>pip install --extra-index-url https://numbworks.github.io/pypi {package_name}=={version}</code></li>
-	  </ul>
-	</div>
-	<ul>
-		<li><a href="nwcommitaverages/">nwcommitaverages</a></li>
-		<li><a href="nwdocstringchecking/">nwdocstringchecking</a></li>
-		<li><a href="nwpackageversions/">nwpackageversions</a></li>
-		<li><a href="nwreadinglist/">nwreadinglist</a></li>
-		<li><a href="nwshared/">nwshared</a></li>
-		<li><a href="nwtimetracking/">nwtimetracking</a></li>
-		<li><a href="nwversioninfofiles/">nwversioninfofiles</a></li>
-	</ul>
+
+    <img src="https://avatars.githubusercontent.com/u/10279234" class="header-img" alt="NW Logo" />
+    
+    <h1 class="title">NW's Python Package Index</h1>
+    
+    <div class="instruction-box">
+      <p>To install the packages listed below, open a terminal application and run one of the following commands:</p>
+      <ul>
+        <li><code>pip install --extra-index-url https://numbworks.github.io/pypi {package_name}</code></li>
+        <li><code>pip install --extra-index-url https://numbworks.github.io/pypi {package_name}=={version}</code></li>
+      </ul>
+    </div>
+    
+    <ul class="package-list">
+        <li><a class="package-link" href="nwcommitaverages/">nwcommitaverages</a></li>
+        <li><a class="package-link" href="nwdocstringchecking/">nwdocstringchecking</a></li>
+        <li><a class="package-link" href="nwpackageversions/">nwpackageversions</a></li>
+        <li><a class="package-link" href="nwreadinglist/">nwreadinglist</a></li>
+        <li><a class="package-link" href="nwshared/">nwshared</a></li>
+        <li><a class="package-link" href="nwtimetracking/">nwtimetracking</a></li>
+        <li><a class="package-link" href="nwversioninfofiles/">nwversioninfofiles</a></li>
+    </ul>
+
   </body>
 </html>
