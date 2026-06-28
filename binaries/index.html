@@ -26,9 +26,10 @@
       .section-title { font-size: 15px; font-weight: 600; margin-top: 0; margin-bottom: 10px; color: #555; }
       
       .download-list { list-style: none; padding: 0; margin: 0; }
-      .download-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 15px; }
+      .download-list li { margin-bottom: 8px; display: flex; align-items: center; }
       .download-link { color: #0969da; text-decoration: none; font-weight: 500; font-family: monospace; font-size: 14px; }
       .download-link:hover { text-decoration: underline; }
+      .file-size { font-family: monospace; font-size: 14px; color: #333; }
       
       .cmd-container { 
         margin-bottom: 12px; 
@@ -130,9 +131,11 @@
               else if (asset.name.includes("linux-arm64.deb")) { isMatch = true; debArm64Asset = asset.browser_download_url; }
 
               if (isMatch) {
+                const sizeInMB = (asset.size / (1024 * 1024)).toFixed(2);
+                
                 basicUserHtml += `
                   <li>
-                    <a class="download-link" href="${asset.browser_download_url}">${asset.name}</a>
+                    <a class="download-link" href="${asset.browser_download_url}">${asset.name}</a>&nbsp;<span class="file-size">(${sizeInMB} mb)</span>
                   </li>`;
               }
             });
@@ -187,12 +190,12 @@
 
             htmlOutput += `
               <div class="version-block">
-                <div class="version-title">${appName}-${version} ${dateDisplay}</div>
+                <div class="version-title">${appName}-${version}${dateDisplay}</div>
                 
                 ${descriptionSnippet}
                 
                 <div class="user-section">
-                  <div class="section-title">Direct Download</div>
+                  <div class="section-title">Direct Downloads</div>
                   <ul class="download-list">
                     ${basicUserHtml}
                   </ul>
