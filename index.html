@@ -11,7 +11,22 @@
         color: #333; 
       }
       .header-img { width: 150px; height: 150px; }
-      .title { font-size: 32px; font-weight: bold; margin: 20px 0 10px 0; }
+      
+      .title-container { 
+        display: flex; 
+        align-items: baseline; 
+        gap: 5px; 
+        margin: 20px 0 10px 0; 
+      }
+      .title { font-size: 32px; font-weight: bold; margin: 0; }
+      .macos-parenthesis { font-size: 14px; color: #666; margin-left: 5px; }
+      .macos-link { 
+        font-size: 14px; 
+        color: #0969da; 
+        text-decoration: none; 
+        cursor: pointer; 
+      }
+      .macos-link:hover { text-decoration: underline; }
       
       .selector-container { margin-bottom: 30px; font-size: 16px; }
       select { padding: 8px 12px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; margin-left: 10px; }
@@ -50,12 +65,60 @@
       
       .loading { color: #666; font-style: italic; padding: 20px; }
       .error { color: #cf222e; padding: 20px; font-weight: bold; }
+
+      /* Overlay Styles */
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      .overlay-content {
+        background-color: #fff;
+        padding: 25px 30px;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        line-height: 1.6;
+      }
+      .overlay-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+      .overlay-close {
+        position: absolute;
+        top: 15px; right: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+      }
+      .overlay-close:hover { color: #333; }
+      .overlay-content ul {
+        padding-left: 20px;
+        margin-bottom: 15px;
+      }
+      .overlay-content li {
+        margin-bottom: 6px;
+      }
     </style>
   </head>
   <body>
 
     <img src="https://avatars.githubusercontent.com/u/10279234" class="header-img" alt="NW Logo" />
-    <p class="title">NW's Binary Releases</p>
+    
+    <div class="title-container">
+      <p class="title">NW's Binary Releases</p>
+      <span class="macos-parenthesis">(<a class="macos-link" onclick="toggleOverlay(true)">Information for MacOS Users</a>)</span>
+    </div>
     
     <div class="selector-container">
       <label for="app-select">Please select the application:</label>
@@ -73,8 +136,41 @@
 
     <div id="release-frame"></div>
 
+    <!-- Overlay Popup Component -->
+    <div id="macos-overlay" class="overlay" onclick="handleOutsideClick(event)">
+      <div class="overlay-content">
+        <span class="overlay-close" onclick="toggleOverlay(false)">&times;</span>
+        <div class="overlay-title">Information for MacOS Users</div>
+        <p>My applications are compiled for the following platforms:</p>
+        <ul>
+          <li>Windows (x64)</li>
+          <li>Linux (generic-amd64, generic-arm64)</li>
+          <li>Linux (debian-amd64, debian-arm64)</li>
+        </ul>
+        <p>As an open‑source developer, <strong>I intentionally and firmly chose not to target Apple's MacOS.</strong></p>
+        <p>The reasons are:</p>
+        <ul>
+          <li><strong>Paid certification:</strong> distributing binaries requires an annual developer license, which is incompatible with free software distribution.</li>
+          <li><strong>Expensive hardware:</strong> building and testing MacOS apps requires proprietary Apple hardware with a high entry cost and a closed ecosystem.</li>
+          <li><strong>Lack of open‑source investment:</strong> Apple is not among the companies that actively support open‑source projects with funding or engineering resources.</li>
+          <li><strong>No local cross‑compilation:</strong> Python applications cannot be cross‑compiled for MacOS from Linux or Windows, breaking my unified build workflow.</li>
+        </ul>
+        <p>That said, if you are a MacOs user, you can still attempt to compile or run my applications from the source code.</p>
+      </div>
+    </div>
+
     <script>
       const GH_ORG = "numbworks";
+
+      function toggleOverlay(show) {
+        document.getElementById("macos-overlay").style.display = show ? "flex" : "none";
+      }
+
+      function handleOutsideClick(event) {
+        if (event.target.id === "macos-overlay") {
+          toggleOverlay(false);
+        }
+      }
 
       async function handleAppSelection() {
         const select = document.getElementById("app-select");
