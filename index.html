@@ -61,6 +61,7 @@
       <label for="app-select">Please select the application:</label>
       <select id="app-select" onchange="handleAppSelection()">
         <option value="" data-lang="">- Select -</option>
+        <option value="NW.NGramTextClassification" data-lang="csharp">NW.NGramTextClassification</option>
         <option value="nwcommitaverages" data-lang="python">nwcommitaverages</option>
         <option value="nwdocstringchecking" data-lang="python">nwdocstringchecking</option>
         <option value="nwpackageversions" data-lang="python">nwpackageversions</option>
@@ -110,8 +111,32 @@
 
           releases.forEach(release => {
             const version = release.tag_name;
+            const cleanVersion = version.startsWith('v') ? version.substring(1) : version;
             const releaseDate = release.published_at ? release.published_at.split('T')[0] : '';
             const dateDisplay = releaseDate ? ` (${releaseDate})` : '';
+
+            // Verify all 7 required assets exist for C# apps
+            if (appLang === "csharp") {
+              const requiredPatterns = [
+                `${appName}.${cleanVersion}.nupkg`,
+                `${appName}.CLI.${cleanVersion}.nupkg`,
+                `-${version}-linux-amd64.deb`,
+                `-${version}-linux-amd64.zip`,
+                `-${version}-linux-arm64.deb`,
+                `-${version}-linux-arm64.zip`,
+                `-${version}-win64.zip`
+              ];
+
+              const assetNames = release.assets.map(a => a.name);
+              const allAssetsPresent = requiredPatterns.every(pattern => 
+                assetNames.some(name => name.endsWith(pattern) || name.includes(pattern))
+              );
+
+              // If any of the 7 assets are missing, completely skip displaying this release block
+              if (!allAssetsPresent) {
+                return;
+              }
+            }
 
             let basicUserHtml = "";
             let advancedUserHtml = "";
@@ -122,6 +147,34 @@
             let debAmd64Asset = null;
             let debArm64Asset = null;
 
+            // Generate additional .nupkg download links for C# applications
+            if (appLang === "csharp") {
+              const nupkgUrl1 = `https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.${cleanVersion}.nupkg`;
+              const nupkgUrl2 = `https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.CLI.${cleanVersion}.nupkg`;
+              
+              let size1 = "< 1 mb";
+              let size2 = "< 1 mb";
+              
+              release.assets.forEach(asset => {
+                if (asset.name === `${appName}.${cleanVersion}.nupkg`) {
+                  const mb = asset.size / (1024 * 1024);
+                  size1 = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
+                }
+                if (asset.name === `${appName}.CLI.${cleanVersion}.nupkg`) {
+                  const mb = asset.size / (1024 * 1024);
+                  size2 = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
+                }
+              });
+
+              basicUserHtml += `
+                <li>
+                  <a class="download-link" href="${nupkgUrl1}">${appName}.${cleanVersion}.nupkg</a>&nbsp;<span class="file-size">(${size1})</span>
+                </li>
+                <li>
+                  <a class="download-link" href="${nupkgUrl2}">${appName}.CLI.${cleanVersion}.nupkg</a>&nbsp;<span class="file-size">(${size2})</span>
+                </li>`;
+            }
+
             release.assets.forEach(asset => {
               let isMatch = false;
               if (asset.name.includes("win64.zip")) { isMatch = true; win64Asset = asset.browser_download_url; }
@@ -130,12 +183,16 @@
               else if (asset.name.includes("linux-amd64.deb")) { isMatch = true; debAmd64Asset = asset.browser_download_url; }
               else if (asset.name.includes("linux-arm64.deb")) { isMatch = true; debArm64Asset = asset.browser_download_url; }
 
+              // Exclude explicit NuGet packages from being double-rendered by this loop
+              if (asset.name.endsWith(".nupkg")) { isMatch = false; }
+
               if (isMatch) {
-                const sizeInMB = (asset.size / (1024 * 1024)).toFixed(2);
+                const sizeInMB = asset.size / (1024 * 1024);
+                const displaySize = sizeInMB < 1 ? "< 1 mb" : `${sizeInMB.toFixed(2)} mb`;
                 
                 basicUserHtml += `
                   <li>
-                    <a class="download-link" href="${asset.browser_download_url}">${asset.name}</a>&nbsp;<span class="file-size">(${sizeInMB} mb)</span>
+                    <a class="download-link" href="${asset.browser_download_url}">${asset.name}</a>&nbsp;<span class="file-size">(${displaySize})</span>
                   </li>`;
               }
             });
@@ -180,6 +237,20 @@
                 <div class="user-section">
                   <div class="section-title">Install From Source</div>
                   ${makeCmdBlock("NW's Python Package Index (Requires Python Installed)", pipScript)}
+                  ${makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript)}
+                </div>`;
+            } else if (appLang === "csharp") {
+              const nugetLibraryScript = `# Open your terminal and go inside the folder that contains your .csproj\nInvoke-WebRequest -Uri "https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.${cleanVersion}.nupkg" -OutFile "${appName}.${cleanVersion}.nupkg";\ndotnet add package ${appName} --version ${cleanVersion} --source .`;
+              
+              const nugetToolScript = `Invoke-WebRequest -Uri "https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.CLI.${cleanVersion}.nupkg" -OutFile "${appName}.CLI.${cleanVersion}.nupkg";\ndotnet tool install --global ${appName}.CLI --version ${cleanVersion} --add-source .;\ndotnet tool list --global`;
+              
+              const dockerScript = `docker run -it --rm mcr.microsoft.com/dotnet/sdk:8.0 bash -c "\n  mkdir -p /tmp/nuget && cd /tmp/nuget && \\\n  curl -L -o tool.nupkg https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.CLI.${cleanVersion}.nupkg && \\\n  dotnet tool install --global ${appName}.CLI --version ${cleanVersion} --add-source . && \\\n  export PATH=\\\${PATH}:/root/.dotnet/tools && \\\n  bash\n"`;
+
+              sourceInstallHtml = `
+                <div class="user-section">
+                  <div class="section-title">Install As NuGet Packages</div>
+                  ${makeCmdBlock("NuGet library (Requires .NET SDK Installed)", nugetLibraryScript)}
+                  ${makeCmdBlock("NuGet tool (Requires .NET SDK Installed)", nugetToolScript)}
                   ${makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript)}
                 </div>`;
             }
