@@ -8,7 +8,7 @@ This is the landing page for **NW's Software Hub**, which consists of the follow
 
 |||
 |:---|:---|
-|NW's Binary Releases|https://numbworks.github.io/binaries|
+|NW's Binary Releases|https://numbworks.github.io/|
 |NW's Python Package Index|https://numbworks.github.io/pypi|
 
 ## NW's Binary Releases
@@ -18,13 +18,10 @@ This is the landing page for **NW's Software Hub**, which consists of the follow
 My applications are compiled for the following platforms:
 
 - Windows (x64)
-- Linux
-  - generic-amd64
-  - generic-arm64
-  - debian-amd64
-  - debian-arm64
+- Linux (generic-amd64, generic-arm64)
+- Linux (debian-amd64, debian-arm64)
 
-As an open‑source developer, I don’t target Apple MacOS.
+As an open‑source developer, I intentionally and firmly chose not to target Apple's MacOS.
 
 The reasons are:
 
