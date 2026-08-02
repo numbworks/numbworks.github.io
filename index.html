@@ -239,11 +239,15 @@
             const releaseDate = release.published_at ? release.published_at.split('T')[0] : '';
             const dateDisplay = releaseDate ? ` (${releaseDate})` : '';
 
-            // Verify all 7 required assets exist for C# apps
+            const libraryPackageName = `${appName}.${cleanVersion}.nupkg`;
+            const cliPackageName = `${appName}.CLI.${cleanVersion}.nupkg`;
+            const assetNames = release.assets.map(a => a.name);
+
+            // Verify required assets exist for C# apps
             if (appLang === "csharp") {
               const requiredPatterns = [
-                `${appName}.${cleanVersion}.nupkg`,
-                `${appName}.CLI.${cleanVersion}.nupkg`,
+                libraryPackageName,
+                cliPackageName,
                 `-${version}-linux-amd64.deb`,
                 `-${version}-linux-amd64.zip`,
                 `-${version}-linux-arm64.deb`,
@@ -251,13 +255,12 @@
                 `-${version}-win64.zip`
               ];
 
-              const assetNames = release.assets.map(a => a.name);
               const allAssetsPresent = requiredPatterns.every(pattern => 
                 assetNames.some(name => name.endsWith(pattern) || name.includes(pattern))
               );
+              const libraryOnlyRelease = assetNames.length === 1 && assetNames.includes(libraryPackageName);
 
-              // If any of the 7 assets are missing, completely skip displaying this release block
-              if (!allAssetsPresent) {
+              if (!allAssetsPresent && !libraryOnlyRelease) {
                 return;
               }
             }
@@ -273,30 +276,26 @@
 
             // Generate additional .nupkg download links for C# applications
             if (appLang === "csharp") {
-              const nupkgUrl1 = `https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.${cleanVersion}.nupkg`;
-              const nupkgUrl2 = `https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.CLI.${cleanVersion}.nupkg`;
-              
-              let size1 = "< 1 mb";
-              let size2 = "< 1 mb";
-              
-              release.assets.forEach(asset => {
-                if (asset.name === `${appName}.${cleanVersion}.nupkg`) {
-                  const mb = asset.size / (1024 * 1024);
-                  size1 = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
-                }
-                if (asset.name === `${appName}.CLI.${cleanVersion}.nupkg`) {
-                  const mb = asset.size / (1024 * 1024);
-                  size2 = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
-                }
-              });
+              const libraryPackageAsset = release.assets.find(asset => asset.name === libraryPackageName);
+              const cliPackageAsset = release.assets.find(asset => asset.name === cliPackageName);
 
-              basicUserHtml += `
-                <li>
-                  <a class="download-link" href="${nupkgUrl1}">${appName}.${cleanVersion}.nupkg</a>&nbsp;<span class="file-size">(${size1})</span>
-                </li>
-                <li>
-                  <a class="download-link" href="${nupkgUrl2}">${appName}.CLI.${cleanVersion}.nupkg</a>&nbsp;<span class="file-size">(${size2})</span>
-                </li>`;
+              if (libraryPackageAsset) {
+                const mb = libraryPackageAsset.size / (1024 * 1024);
+                const size = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
+                basicUserHtml += `
+                  <li>
+                    <a class="download-link" href="${libraryPackageAsset.browser_download_url}">${libraryPackageName}</a>&nbsp;<span class="file-size">(${size})</span>
+                  </li>`;
+              }
+
+              if (cliPackageAsset) {
+                const mb = cliPackageAsset.size / (1024 * 1024);
+                const size = mb < 1 ? "< 1 mb" : `${mb.toFixed(2)} mb`;
+                basicUserHtml += `
+                  <li>
+                    <a class="download-link" href="${cliPackageAsset.browser_download_url}">${cliPackageName}</a>&nbsp;<span class="file-size">(${size})</span>
+                  </li>`;
+              }
             }
 
             release.assets.forEach(asset => {
@@ -373,9 +372,9 @@
               sourceInstallHtml = `
                 <div class="user-section">
                   <div class="section-title">Install As NuGet Packages</div>
-                  ${makeCmdBlock("NuGet library (Requires .NET SDK Installed)", nugetLibraryScript)}
-                  ${makeCmdBlock("NuGet tool (Requires .NET SDK Installed)", nugetToolScript)}
-                  ${makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript)}
+                  ${assetNames.includes(libraryPackageName) ? makeCmdBlock("NuGet library (Requires .NET SDK Installed)", nugetLibraryScript) : ""}
+                  ${assetNames.includes(cliPackageName) ? makeCmdBlock("NuGet tool (Requires .NET SDK Installed)", nugetToolScript) : ""}
+                  ${assetNames.includes(cliPackageName) ? makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript) : ""}
                 </div>`;
             }
 
@@ -396,10 +395,11 @@
                   </ul>
                 </div>
                 
-                <div class="user-section">
-                  <div class="section-title">Terminal Commands</div>
-                  ${advancedUserHtml}
-                </div>
+                ${advancedUserHtml ? `
+                  <div class="user-section">
+                    <div class="section-title">Terminal Commands</div>
+                    ${advancedUserHtml}
+                  </div>` : ""}
 
                 ${sourceInstallHtml}
               </div>`;
