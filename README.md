@@ -32,6 +32,28 @@ The reasons are:
 
 If you are a MacOs user, you can still attempt to compile or run my applications from the source code.
 
+### Regarding C# applications on Termux
+
+The `export DOTNET_GCHeapHardLimit=0x10000000` is mandatory, otherwise the application will fail to start and it will return the following error message:
+
+```
+GC heap initialization failed with error 0x8007000E
+Failed to create CoreCLR, HRESULT: 0x8007000E
+```
+
+The reason behind this error message is the following one:
+
+> *This new error (0x8007000E) is a C# / .NET Core runtime error representing E_OUTOFMEMORY (Not Enough Memory). When running standalone .NET applications inside a Termux PRoot environment, .NET tries to query the host system to figure out how much RAM is available. Because PRoot isolates virtual environments without full kernel interfaces (/proc/meminfo access can be restricted or misread), CoreCLR panics thinking it has zero memory to allocate for the GC (Garbage Collector) heap.*
+
+The `export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` is mandatory, otherwise the application will fail to start and it will return the following error message:
+
+```
+Process terminated. Couldn't find a valid ICU package installed on the system. Please install libicu (or icu-libs) using your package manager and try again. Alternatively you can set the configuration flag System.Globalization.Invariant to true if you want to run with no globalization support. Please see https://aka.ms/dotnet-missing-libicu](https://aka.ms/dotnet-missing-libicu for more information. [...]
+```
+
+
+
+
 ## NW's Python Package Index
 
 ### Getting started
