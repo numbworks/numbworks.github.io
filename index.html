@@ -357,12 +357,27 @@
               const pipScript = `pip install --extra-index-url https://numbworks.github.io/pypi ${appName}==${version}`;
               const dockerScript = `docker run -it python:3.12.5-bookworm /bin/bash\npip install --extra-index-url https://numbworks.github.io/pypi ${appName}==${version}`;
               
+              let termuxHtml = "";
+              if (debArm64Asset) {
+                const fileName = debArm64Asset.split('/').pop();
+                const termuxSetupScript = `pkg update && pkg install proot-distro -y\nproot-distro install debian\nproot-distro login debian\napt update && apt upgrade -y\napt install wget unzip dpkg man-db -y`;
+                const termuxInstallScript = `wget ${debArm64Asset} && \\\ndpkg -i ${fileName}`;
+
+                termuxHtml = `
+                  <div class="user-section">
+                    <div class="section-title">Install on Termux (Android)</div>
+                    ${makeCmdBlock("1. Install Debian in Termux (one-time setup):", termuxSetupScript)}
+                    ${makeCmdBlock("2. Download and install Debian package:", termuxInstallScript)}
+                  </div>`;
+              }
+
               sourceInstallHtml = `
                 <div class="user-section">
                   <div class="section-title">Install From Source</div>
                   ${makeCmdBlock("NW's Python Package Index (Requires Python Installed)", pipScript)}
                   ${makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript)}
-                </div>`;
+                </div>
+                ${termuxHtml}`;
             } else if (appLang === "csharp") {
               const nugetLibraryScript = `# Open your terminal and go inside the folder that contains your .csproj\nInvoke-WebRequest -Uri "https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.${cleanVersion}.nupkg" -OutFile "${appName}.${cleanVersion}.nupkg";\ndotnet add package ${appName} --version ${cleanVersion} --source .`;
               
@@ -370,13 +385,28 @@
               
               const dockerScript = `docker run -it --rm mcr.microsoft.com/dotnet/sdk:8.0 bash -c "\n  mkdir -p /tmp/nuget && cd /tmp/nuget && \\\n  curl -L -o tool.nupkg https://github.com/${GH_ORG}/${appName}/releases/download/${version}/${appName}.CLI.${cleanVersion}.nupkg && \\\n  dotnet tool install --global ${appName}.CLI --version ${cleanVersion} --add-source . && \\\n  export PATH=\\\${PATH}:/root/.dotnet/tools && \\\n  bash\n"`;
 
+              let termuxHtml = "";
+              if (debArm64Asset && assetNames.includes(cliPackageName)) {
+                const fileName = debArm64Asset.split('/').pop();
+                const termuxSetupScript = `pkg update && pkg install proot-distro -y\nproot-distro install debian\nproot-distro login debian\napt update && apt upgrade -y\napt install wget unzip dpkg man-db -y\necho 'export DOTNET_GCHeapHardLimit=0x10000000' >> ~/.bashrc\necho 'export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1' >> ~/.bashrc\nsource ~/.bashrc`;
+                const termuxInstallScript = `wget ${debArm64Asset} && \\\ndpkg -i ${fileName}`;
+
+                termuxHtml = `
+                  <div class="user-section">
+                    <div class="section-title">Install on Termux (Android)</div>
+                    ${makeCmdBlock("1. Install Debian in Termux (one-time setup):", termuxSetupScript)}
+                    ${makeCmdBlock("2. Download and install Debian package:", termuxInstallScript)}
+                  </div>`;
+              }
+
               sourceInstallHtml = `
                 <div class="user-section">
                   <div class="section-title">Install As NuGet Packages</div>
                   ${assetNames.includes(libraryPackageName) ? makeCmdBlock("NuGet library (Requires .NET SDK Installed)", nugetLibraryScript) : ""}
                   ${assetNames.includes(cliPackageName) ? makeCmdBlock("NuGet tool (Requires .NET SDK Installed)", nugetToolScript) : ""}
                   ${assetNames.includes(cliPackageName) ? makeCmdBlock("Try Out In A Docker Container (Requires Docker Installed)", dockerScript) : ""}
-                </div>`;
+                </div>
+                ${termuxHtml}`;
             }
 
             const descriptionSnippet = (visibleReleaseCount === 1 && repoDescription) 
